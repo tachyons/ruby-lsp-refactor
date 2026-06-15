@@ -1,14 +1,29 @@
 # frozen_string_literal: true
 
 require "ruby_lsp/addon"
-require "ruby_lsp/requests/code_actions"
-require "ruby_lsp/requests/code_action_resolve"
+
+# Phase 1 – Local rewrites
 require_relative "listeners/conditional_listener"
-require_relative "listeners/variable_listener"
 require_relative "listeners/string_listener"
+require_relative "listeners/block_style_listener"
+require_relative "listeners/logical_operator_listener"
+
+# Phase 2 – Variable & literal optimisation
+require_relative "listeners/variable_listener"
 require_relative "listeners/hash_listener"
 require_relative "listeners/array_listener"
+require_relative "listeners/string_array_listener"
+require_relative "listeners/string_freeze_listener"
+require_relative "listeners/enumerable_listener"
+require_relative "listeners/raise_listener"
+
+# Phase 3 – Advanced structure
 require_relative "listeners/method_listener"
+require_relative "listeners/constant_listener"
+require_relative "listeners/accessor_listener"
+require_relative "listeners/rescue_listener"
+require_relative "listeners/super_listener"
+require_relative "listeners/rspec_let_listener"
 
 module RubyLsp
   module Refactor
@@ -78,14 +93,25 @@ module RubyLsp
         # Phase 1 – Local rewrites
         ConditionalListener.new(response_builder, node_context, dispatcher)
         StringListener.new(response_builder, node_context, dispatcher)
+        BlockStyleListener.new(response_builder, node_context, dispatcher)
+        LogicalOperatorListener.new(response_builder, node_context, dispatcher)
 
         # Phase 2 – Variable & literal optimisation
         VariableListener.new(response_builder, node_context, dispatcher)
         HashListener.new(response_builder, node_context, dispatcher)
         ArrayListener.new(response_builder, node_context, dispatcher)
+        StringArrayListener.new(response_builder, node_context, dispatcher)
+        StringFreezeListener.new(response_builder, node_context, dispatcher)
+        EnumerableListener.new(response_builder, node_context, dispatcher)
+        RaiseListener.new(response_builder, node_context, dispatcher)
 
         # Phase 3 – Advanced structure
         MethodListener.new(response_builder, node_context, dispatcher)
+        ConstantListener.new(response_builder, node_context, dispatcher)
+        AccessorListener.new(response_builder, node_context, dispatcher)
+        RescueListener.new(response_builder, node_context, dispatcher)
+        SuperListener.new(response_builder, node_context, dispatcher)
+        RspecLetListener.new(response_builder, node_context, dispatcher)
 
         dispatcher.dispatch(document.ast)
         response_builder.response
