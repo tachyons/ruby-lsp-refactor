@@ -47,13 +47,13 @@ module RubyLsp
       # ---------------------------------------------------------------------------
 
       def test_does_not_offer_action_for_already_double_quoted_string
-        source = '"hello world"' + "\n"
+        source = "\"hello world\"\n"
         actions = code_actions_for(source, line: 0)
         assert_nil find_action(actions, "Convert to interpolated string")
       end
 
       def test_does_not_offer_action_for_interpolated_string
-        source = '"hello #{name}"' + "\n"
+        source = "\"hello #{name}\"\n"
         actions = code_actions_for(source, line: 0)
         assert_nil find_action(actions, "Convert to interpolated string")
       end

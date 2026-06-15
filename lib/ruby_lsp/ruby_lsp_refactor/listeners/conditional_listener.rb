@@ -127,8 +127,8 @@ module RubyLsp
 
         @response_builder << Interface::CodeAction.new(
           title: "Convert to post-conditional",
-          kind:  Constant::CodeActionKind::REFACTOR_REWRITE,
-          edit:  single_edit_workspace_edit(node, new_text),
+          kind: Constant::CodeActionKind::REFACTOR_REWRITE,
+          edit: single_edit_workspace_edit(node, new_text)
         )
       end
 
@@ -141,8 +141,8 @@ module RubyLsp
 
         @response_builder << Interface::CodeAction.new(
           title: "Convert to post-conditional",
-          kind:  Constant::CodeActionKind::REFACTOR_REWRITE,
-          edit:  single_edit_workspace_edit(node, new_text),
+          kind: Constant::CodeActionKind::REFACTOR_REWRITE,
+          edit: single_edit_workspace_edit(node, new_text)
         )
       end
 
@@ -155,8 +155,8 @@ module RubyLsp
 
         @response_builder << Interface::CodeAction.new(
           title: "Convert to block if",
-          kind:  Constant::CodeActionKind::REFACTOR_REWRITE,
-          edit:  single_edit_workspace_edit(node, new_text),
+          kind: Constant::CodeActionKind::REFACTOR_REWRITE,
+          edit: single_edit_workspace_edit(node, new_text)
         )
       end
 
@@ -169,8 +169,8 @@ module RubyLsp
 
         @response_builder << Interface::CodeAction.new(
           title: "Convert to block unless",
-          kind:  Constant::CodeActionKind::REFACTOR_REWRITE,
-          edit:  single_edit_workspace_edit(node, new_text),
+          kind: Constant::CodeActionKind::REFACTOR_REWRITE,
+          edit: single_edit_workspace_edit(node, new_text)
         )
       end
 
@@ -183,8 +183,8 @@ module RubyLsp
 
         @response_builder << Interface::CodeAction.new(
           title: "Convert to unless",
-          kind:  Constant::CodeActionKind::REFACTOR_REWRITE,
-          edit:  single_edit_workspace_edit(node, new_text),
+          kind: Constant::CodeActionKind::REFACTOR_REWRITE,
+          edit: single_edit_workspace_edit(node, new_text)
         )
       end
 
@@ -197,8 +197,8 @@ module RubyLsp
 
         @response_builder << Interface::CodeAction.new(
           title: "Convert to if",
-          kind:  Constant::CodeActionKind::REFACTOR_REWRITE,
-          edit:  single_edit_workspace_edit(node, new_text),
+          kind: Constant::CodeActionKind::REFACTOR_REWRITE,
+          edit: single_edit_workspace_edit(node, new_text)
         )
       end
 
@@ -212,8 +212,8 @@ module RubyLsp
 
         @response_builder << Interface::CodeAction.new(
           title: "Invert if/else",
-          kind:  Constant::CodeActionKind::REFACTOR_REWRITE,
-          edit:  single_edit_workspace_edit(node, new_text),
+          kind: Constant::CodeActionKind::REFACTOR_REWRITE,
+          edit: single_edit_workspace_edit(node, new_text)
         )
       end
 

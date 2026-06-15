@@ -53,7 +53,7 @@ module RubyLsp
           :on_def_node_leave,
           :on_call_node_enter,
           :on_call_node_leave,
-          :on_local_variable_write_node_enter,
+          :on_local_variable_write_node_enter
         )
       end
 
@@ -133,12 +133,12 @@ module RubyLsp
 
         # Replace the assignment RHS with a call to the new method.
         replace_edit = Interface::TextEdit.new(
-          range:    node_to_lsp_range(write_node.value),
-          new_text: "#{method_name}#{call_args}",
+          range: node_to_lsp_range(write_node.value),
+          new_text: "#{method_name}#{call_args}"
         )
 
         # Insert the new private method after the enclosing def's closing `end`.
-        insert_line = def_node.location.end_line  # 1-based; insert after this line
+        insert_line = def_node.location.end_line # 1-based; insert after this line
         new_method  = "\n#{body_indent}private\n\n" \
                       "#{body_indent}def #{method_name}#{param_list}\n" \
                       "#{body_indent}  #{rhs_src}\n" \
@@ -147,22 +147,22 @@ module RubyLsp
         insert_edit = Interface::TextEdit.new(
           range: Interface::Range.new(
             start: Interface::Position.new(line: insert_line, character: 0),
-            end:   Interface::Position.new(line: insert_line, character: 0),
+            end: Interface::Position.new(line: insert_line, character: 0)
           ),
-          new_text: new_method,
+          new_text: new_method
         )
 
         @response_builder << Interface::CodeAction.new(
           title: "Extract to method '#{method_name}'",
-          kind:  Constant::CodeActionKind::REFACTOR_EXTRACT,
-          edit:  multi_edit_workspace_edit([replace_edit, insert_edit]),
+          kind: Constant::CodeActionKind::REFACTOR_EXTRACT,
+          edit: multi_edit_workspace_edit([replace_edit, insert_edit])
         )
       end
 
       # Collect names of variables that are:
       #   a) written before the extraction point in the same def body, AND
       #   b) referenced (read) inside +expr_node+.
-      def params_needed_for(expr_node, def_node)
+      def params_needed_for(expr_node, _def_node)
         expr_src = expr_node.location.slice
 
         @seen_writes
@@ -185,9 +185,9 @@ module RubyLsp
           edit = Interface::TextEdit.new(
             range: Interface::Range.new(
               start: Interface::Position.new(line: insert_line, character: insert_col),
-              end:   Interface::Position.new(line: insert_line, character: insert_col),
+              end: Interface::Position.new(line: insert_line, character: insert_col)
             ),
-            new_text: new_text_fragment,
+            new_text: new_text_fragment
           )
         else
           # No parameters yet — insert `(new_param)` right after the method name.
@@ -197,16 +197,16 @@ module RubyLsp
           edit = Interface::TextEdit.new(
             range: Interface::Range.new(
               start: Interface::Position.new(line: name_end_line, character: name_end_col),
-              end:   Interface::Position.new(line: name_end_line, character: name_end_col),
+              end: Interface::Position.new(line: name_end_line, character: name_end_col)
             ),
-            new_text: "(new_param)",
+            new_text: "(new_param)"
           )
         end
 
         @response_builder << Interface::CodeAction.new(
           title: "Add parameter",
-          kind:  Constant::CodeActionKind::REFACTOR_REWRITE,
-          edit:  multi_edit_workspace_edit([edit]),
+          kind: Constant::CodeActionKind::REFACTOR_REWRITE,
+          edit: multi_edit_workspace_edit([edit])
         )
       end
 
@@ -216,7 +216,7 @@ module RubyLsp
           params_node.requireds,
           params_node.optionals,
           params_node.keywords,
-          [params_node.rest, params_node.keyword_rest, params_node.block].compact,
+          [params_node.rest, params_node.keyword_rest, params_node.block].compact
         ].flatten.compact.last
       end
 
@@ -238,21 +238,21 @@ module RubyLsp
         # Replace the entire parameters span (between the parens).
         params_range = Interface::Range.new(
           start: Interface::Position.new(
-            line:      params_node.location.start_line - 1,
-            character: params_node.location.start_column,
+            line: params_node.location.start_line - 1,
+            character: params_node.location.start_column
           ),
           end: Interface::Position.new(
-            line:      params_node.location.end_line - 1,
-            character: params_node.location.end_column,
-          ),
+            line: params_node.location.end_line - 1,
+            character: params_node.location.end_column
+          )
         )
 
         edit = Interface::TextEdit.new(range: params_range, new_text: new_params)
 
         @response_builder << Interface::CodeAction.new(
           title: "Convert to keyword arguments",
-          kind:  Constant::CodeActionKind::REFACTOR_REWRITE,
-          edit:  multi_edit_workspace_edit([edit]),
+          kind: Constant::CodeActionKind::REFACTOR_REWRITE,
+          edit: multi_edit_workspace_edit([edit])
         )
       end
 
@@ -261,16 +261,16 @@ module RubyLsp
         parts = []
 
         params_node.requireds.each do |p|
-          if required_names.include?(p.name)
-            parts << "#{p.name}:"
-          else
-            parts << p.location.slice.strip
-          end
+          parts << if required_names.include?(p.name)
+                     "#{p.name}:"
+                   else
+                     p.location.slice.strip
+                   end
         end
 
         params_node.optionals.each { |p| parts << p.location.slice.strip }
-        parts << params_node.rest.location.slice.strip   if params_node.rest
-        params_node.keywords.each  { |p| parts << p.location.slice.strip }
+        parts << params_node.rest.location.slice.strip if params_node.rest
+        params_node.keywords.each { |p| parts << p.location.slice.strip }
         parts << params_node.keyword_rest.location.slice.strip if params_node.keyword_rest
         parts << params_node.block.location.slice.strip        if params_node.block
 
@@ -297,9 +297,9 @@ module RubyLsp
         insert_edit = Interface::TextEdit.new(
           range: Interface::Range.new(
             start: Interface::Position.new(line: insert_line, character: 0),
-            end:   Interface::Position.new(line: insert_line, character: 0),
+            end: Interface::Position.new(line: insert_line, character: 0)
           ),
-          new_text: let_text,
+          new_text: let_text
         )
 
         # Delete the original assignment line inside the example.
@@ -307,8 +307,8 @@ module RubyLsp
 
         @response_builder << Interface::CodeAction.new(
           title: "Extract to let(:#{var_name})",
-          kind:  Constant::CodeActionKind::REFACTOR_EXTRACT,
-          edit:  multi_edit_workspace_edit([insert_edit, delete_edit]),
+          kind: Constant::CodeActionKind::REFACTOR_EXTRACT,
+          edit: multi_edit_workspace_edit([insert_edit, delete_edit])
         )
       end
     end

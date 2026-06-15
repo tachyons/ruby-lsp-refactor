@@ -56,8 +56,8 @@ module RubyLsp
 
         @response_builder << Interface::CodeAction.new(
           title: "Convert to symbol array",
-          kind:  Constant::CodeActionKind::REFACTOR_REWRITE,
-          edit:  single_edit_workspace_edit(node, new_text),
+          kind: Constant::CodeActionKind::REFACTOR_REWRITE,
+          edit: single_edit_workspace_edit(node, new_text)
         )
       end
     end

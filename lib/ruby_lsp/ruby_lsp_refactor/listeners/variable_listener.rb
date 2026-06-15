@@ -41,7 +41,7 @@ module RubyLsp
           :on_local_variable_write_node_enter,
           :on_local_variable_read_node_enter,
           :on_call_node_enter,
-          :on_program_node_leave,
+          :on_program_node_leave
         )
       end
 
@@ -89,15 +89,15 @@ module RubyLsp
 
         @read_nodes[write_node.name].each do |read_node|
           edits << Interface::TextEdit.new(
-            range:    node_to_lsp_range(read_node),
-            new_text: rhs_text,
+            range: node_to_lsp_range(read_node),
+            new_text: rhs_text
           )
         end
 
         @response_builder << Interface::CodeAction.new(
           title: "Inline variable '#{write_node.name}'",
-          kind:  Constant::CodeActionKind::REFACTOR_INLINE,
-          edit:  multi_edit_workspace_edit(edits),
+          kind: Constant::CodeActionKind::REFACTOR_INLINE,
+          edit: multi_edit_workspace_edit(edits)
         )
       end
 
@@ -113,20 +113,20 @@ module RubyLsp
         insert_edit = Interface::TextEdit.new(
           range: Interface::Range.new(
             start: Interface::Position.new(line: insert_line, character: 0),
-            end:   Interface::Position.new(line: insert_line, character: 0),
+            end: Interface::Position.new(line: insert_line, character: 0)
           ),
-          new_text: "#{indent}variable = #{expr_src}\n",
+          new_text: "#{indent}variable = #{expr_src}\n"
         )
 
         replace_edit = Interface::TextEdit.new(
-          range:    node_to_lsp_range(node),
-          new_text: "variable",
+          range: node_to_lsp_range(node),
+          new_text: "variable"
         )
 
         @response_builder << Interface::CodeAction.new(
           title: "Extract local variable",
-          kind:  Constant::CodeActionKind::REFACTOR_EXTRACT,
-          edit:  multi_edit_workspace_edit([insert_edit, replace_edit]),
+          kind: Constant::CodeActionKind::REFACTOR_EXTRACT,
+          edit: multi_edit_workspace_edit([insert_edit, replace_edit])
         )
       end
     end

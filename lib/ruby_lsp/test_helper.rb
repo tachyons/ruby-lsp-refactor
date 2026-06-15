@@ -31,16 +31,16 @@ module RubyLsp
         uri          = URI::Generic.from_path(path: "/test/fixture.rb")
         global_state = RubyLsp::GlobalState.new
         document     = RubyLsp::RubyDocument.new(
-          source:       source,
-          version:      1,
-          uri:          uri,
-          global_state: global_state,
+          source: source,
+          version: 1,
+          uri: uri,
+          global_state: global_state
         )
 
         # LSP range hash — same shape the real server passes to CodeActions.
         range = {
           start: { line: line, character: char },
-          end:   { line: line, character: char },
+          end: { line: line, character: char }
         }
 
         RubyLsp::Refactor::Addon.refactor_actions_for(document, range)

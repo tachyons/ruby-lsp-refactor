@@ -31,7 +31,7 @@ module RubyLsp
 
     class Addon < ::RubyLsp::Addon
       # Called once when the language server activates this add-on.
-      def activate(global_state, message_queue)
+      def activate(global_state, _message_queue)
         @global_state = global_state
 
         # Inject our actions into the standard code-actions response.
@@ -62,13 +62,13 @@ module RubyLsp
 
         cursor_range = Interface::Range.new(
           start: Interface::Position.new(
-            line:      range.dig(:start, :line),
-            character: range.dig(:start, :character),
+            line: range.dig(:start, :line),
+            character: range.dig(:start, :character)
           ),
           end: Interface::Position.new(
-            line:      range.dig(:end, :line),
-            character: range.dig(:end, :character),
-          ),
+            line: range.dig(:end, :line),
+            character: range.dig(:end, :character)
+          )
         )
 
         node_context     = NodeContext.new(document.uri.to_s, cursor_range)

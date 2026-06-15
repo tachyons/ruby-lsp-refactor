@@ -67,16 +67,16 @@ module RubyLsp
 
         # Reconstruct the hash preserving the outer braces when present.
         # HashNode has opening/closing braces; KeywordHashNode does not.
-        if node.is_a?(Prism::HashNode)
-          new_text = "{ #{new_pairs.join(", ")} }"
-        else
-          new_text = new_pairs.join(", ")
-        end
+        new_text = if node.is_a?(Prism::HashNode)
+                     "{ #{new_pairs.join(", ")} }"
+                   else
+                     new_pairs.join(", ")
+                   end
 
         @response_builder << Interface::CodeAction.new(
           title: "Convert to keyword syntax",
-          kind:  Constant::CodeActionKind::REFACTOR_REWRITE,
-          edit:  single_edit_workspace_edit(node, new_text),
+          kind: Constant::CodeActionKind::REFACTOR_REWRITE,
+          edit: single_edit_workspace_edit(node, new_text)
         )
       end
 

@@ -18,13 +18,13 @@ module RubyLsp
           loc = node.location
           Interface::Range.new(
             start: Interface::Position.new(
-              line:      loc.start_line - 1,
-              character: loc.start_column,
+              line: loc.start_line - 1,
+              character: loc.start_column
             ),
             end: Interface::Position.new(
-              line:      loc.end_line - 1,
-              character: loc.end_column,
-            ),
+              line: loc.end_line - 1,
+              character: loc.end_column
+            )
           )
         end
 
@@ -56,9 +56,9 @@ module RubyLsp
           Interface::WorkspaceEdit.new(
             changes: {
               @node_context.uri => [
-                Interface::TextEdit.new(range: node_to_lsp_range(node), new_text: new_text),
-              ],
-            },
+                Interface::TextEdit.new(range: node_to_lsp_range(node), new_text: new_text)
+              ]
+            }
           )
         end
 
@@ -68,7 +68,7 @@ module RubyLsp
         # @return [Interface::WorkspaceEdit]
         def multi_edit_workspace_edit(edits)
           Interface::WorkspaceEdit.new(
-            changes: { @node_context.uri => edits },
+            changes: { @node_context.uri => edits }
           )
         end
 
@@ -81,10 +81,10 @@ module RubyLsp
           line = node.location.start_line - 1
           Interface::TextEdit.new(
             range: Interface::Range.new(
-              start: Interface::Position.new(line: line,     character: 0),
-              end:   Interface::Position.new(line: line + 1, character: 0),
+              start: Interface::Position.new(line: line, character: 0),
+              end: Interface::Position.new(line: line + 1, character: 0)
             ),
-            new_text: "",
+            new_text: ""
           )
         end
 
