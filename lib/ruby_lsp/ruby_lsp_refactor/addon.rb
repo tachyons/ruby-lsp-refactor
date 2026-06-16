@@ -31,7 +31,6 @@ require_relative "listeners/super_listener"
 require_relative "listeners/extract_include_file_listener"
 
 # Operators & blocks
-require_relative "listeners/block_style_listener"
 require_relative "listeners/tap_listener"
 require_relative "listeners/logical_operator_listener"
 require_relative "listeners/raise_listener"
@@ -120,7 +119,6 @@ module RubyLsp
         RescueListener.new(response_builder, node_context, dispatcher)
         SuperListener.new(response_builder, node_context, dispatcher)
         ExtractIncludeFileListener.new(response_builder, node_context, dispatcher)
-        BlockStyleListener.new(response_builder, node_context, dispatcher)
         TapListener.new(response_builder, node_context, dispatcher)
         LogicalOperatorListener.new(response_builder, node_context, dispatcher)
         RaiseListener.new(response_builder, node_context, dispatcher)

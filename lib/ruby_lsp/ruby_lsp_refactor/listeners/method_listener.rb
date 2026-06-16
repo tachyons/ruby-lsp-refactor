@@ -8,27 +8,22 @@ module RubyLsp
     #
     # Emitted actions
     # ───────────────
-    # 1. Extract to method
-    #      Cursor on a LocalVariableWriteNode inside a def body.
-    #      Extracts the assignment RHS (and the assignment itself) into a new
-    #      private method, passing any variables that are defined before the
-    #      extraction point and referenced inside the extracted expression as
-    #      parameters.
-    #
-    # 2. Add parameter
+    # 1. Add parameter
     #      Cursor anywhere inside a DefNode.
     #      Appends a `new_param` placeholder at the end of the parameter list
     #      (or creates parentheses if the method has none).
     #
-    # 3. Convert to keyword arguments
+    # 2. Convert to keyword arguments
     #      Cursor anywhere inside a DefNode that has required positional params.
-    #      Rewrites `def foo(a, b)` → `def foo(a:, b:)` and updates every
-    #      call-site within the same file that passes positional arguments.
+    #      Rewrites `def foo(a, b)` → `def foo(a:, b:)`.
     #
-    # 4. Extract to let  (RSpec)
+    # 3. Extract to let  (RSpec)
     #      Cursor on a LocalVariableWriteNode inside an RSpec `it`/`specify`
     #      block.  Moves the assignment into a `let(:name) { value }` block
     #      inserted above the enclosing example group call.
+    #
+    # Note: "Extract to method" is provided by ruby-lsp upstream as
+    # "Refactor: Extract Method" and is intentionally not duplicated here.
     class MethodListener
       include RubyLsp::Requests::Support::Common
       include Support::NodeHelpers
@@ -43,9 +38,6 @@ module RubyLsp
         # Accumulate ancestor context during the single-pass walk.
         # Each entry is a Hash with :type and the node itself.
         @ancestor_stack = []
-
-        # All write nodes seen so far (for "defined before extraction point").
-        @seen_writes = []
 
         dispatcher.register(
           self,
@@ -74,7 +66,6 @@ module RubyLsp
 
       def on_def_node_leave(_node)
         @ancestor_stack.pop
-        @seen_writes.clear
       rescue StandardError
         nil
       end
@@ -92,19 +83,11 @@ module RubyLsp
       end
 
       def on_local_variable_write_node_enter(node)
-        enclosing_def  = nearest_ancestor(:def)
         enclosing_call = nearest_ancestor(:call)
-
-        # Always track writes for param-detection, regardless of cursor position.
-        @seen_writes << node
 
         return unless node_covers_cursor?(node)
 
-        if enclosing_call && rspec_example?(enclosing_call[:node])
-          emit_extract_to_let(node, enclosing_call[:node])
-        elsif enclosing_def
-          emit_extract_to_method(node, enclosing_def[:node])
-        end
+        emit_extract_to_let(node, enclosing_call[:node]) if enclosing_call && rspec_example?(enclosing_call[:node])
       rescue StandardError
         nil
       end
@@ -117,62 +100,7 @@ module RubyLsp
         @ancestor_stack.reverse.find { |a| a[:type] == type }
       end
 
-      # ── 1. Extract to method ─────────────────────────────────────────────────
-
-      def emit_extract_to_method(write_node, def_node)
-        method_name = write_node.name.to_s
-        rhs_src     = write_node.value.location.slice.strip
-        indent      = indent_for(def_node)
-        body_indent = "#{indent}  "
-
-        # Determine which variables defined before this write are referenced
-        # inside the RHS expression.
-        params = params_needed_for(write_node.value, def_node)
-        param_list = params.empty? ? "" : "(#{params.join(", ")})"
-        call_args  = params.empty? ? "" : "(#{params.join(", ")})"
-
-        # Replace the assignment RHS with a call to the new method.
-        replace_edit = Interface::TextEdit.new(
-          range: node_to_lsp_range(write_node.value),
-          new_text: "#{method_name}#{call_args}"
-        )
-
-        # Insert the new private method after the enclosing def's closing `end`.
-        insert_line = def_node.location.end_line # 1-based; insert after this line
-        new_method  = "\n#{body_indent}private\n\n" \
-                      "#{body_indent}def #{method_name}#{param_list}\n" \
-                      "#{body_indent}  #{rhs_src}\n" \
-                      "#{body_indent}end\n"
-
-        insert_edit = Interface::TextEdit.new(
-          range: Interface::Range.new(
-            start: Interface::Position.new(line: insert_line, character: 0),
-            end: Interface::Position.new(line: insert_line, character: 0)
-          ),
-          new_text: new_method
-        )
-
-        @response_builder << Interface::CodeAction.new(
-          title: "Extract to method '#{method_name}'",
-          kind: Constant::CodeActionKind::REFACTOR_EXTRACT,
-          edit: multi_edit_workspace_edit([replace_edit, insert_edit])
-        )
-      end
-
-      # Collect names of variables that are:
-      #   a) written before the extraction point in the same def body, AND
-      #   b) referenced (read) inside +expr_node+.
-      def params_needed_for(expr_node, _def_node)
-        expr_src = expr_node.location.slice
-
-        @seen_writes
-          .select { |w| w.location.start_offset < expr_node.location.start_offset }
-          .map { |w| w.name.to_s }
-          .select { |name| expr_src.match?(/\b#{Regexp.escape(name)}\b/) }
-          .uniq
-      end
-
-      # ── 2. Add parameter ─────────────────────────────────────────────────────
+      # ── 1. Add parameter ─────────────────────────────────────────────────────
 
       def emit_add_parameter(def_node)
         if def_node.parameters
@@ -220,7 +148,7 @@ module RubyLsp
         ].flatten.compact.last
       end
 
-      # ── 3. Convert to keyword arguments ──────────────────────────────────────
+      # ── 2. Convert to keyword arguments ──────────────────────────────────────
 
       def has_positional_params?(def_node)
         def_node.parameters&.requireds&.any? { |p| p.is_a?(Prism::RequiredParameterNode) }
@@ -277,7 +205,7 @@ module RubyLsp
         parts
       end
 
-      # ── 4. Extract to let (RSpec) ─────────────────────────────────────────────
+      # ── 3. Extract to let (RSpec) ─────────────────────────────────────────────
 
       RSPEC_EXAMPLE_METHODS = %i[it specify example scenario].freeze
 

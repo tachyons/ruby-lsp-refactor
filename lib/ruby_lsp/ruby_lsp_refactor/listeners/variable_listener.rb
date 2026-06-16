@@ -12,11 +12,8 @@ module RubyLsp
     #      result = user.calculate   →  (line deleted)
     #      puts result               →  puts user.calculate
     #
-    # 2. Extract local variable
-    #      Cursor on any expression; wraps it in a new variable assignment
-    #      inserted on the line above.
-    #      user.full_name.upcase     →  name = user.full_name.upcase
-    #                                   name
+    # Note: "Extract local variable" is provided by ruby-lsp upstream as
+    # "Refactor: Extract Variable" and is intentionally not duplicated here.
     class VariableListener
       include RubyLsp::Requests::Support::Common
       include Support::NodeHelpers
@@ -40,7 +37,6 @@ module RubyLsp
           self,
           :on_local_variable_write_node_enter,
           :on_local_variable_read_node_enter,
-          :on_call_node_enter,
           :on_program_node_leave
         )
       end
@@ -59,15 +55,6 @@ module RubyLsp
 
         # Defer: we need all reads collected before building the edit.
         @pending_write_nodes << node
-      rescue StandardError
-        nil
-      end
-
-      # Offer "Extract local variable" for any call expression under the cursor.
-      def on_call_node_enter(node)
-        return unless node_covers_cursor?(node)
-
-        emit_extract_local_variable(node)
       rescue StandardError
         nil
       end
@@ -98,35 +85,6 @@ module RubyLsp
           title: "Inline variable '#{write_node.name}'",
           kind: Constant::CodeActionKind::REFACTOR_INLINE,
           edit: multi_edit_workspace_edit(edits)
-        )
-      end
-
-      # ── extract local variable ───────────────────────────────────────────────
-
-      def emit_extract_local_variable(node)
-        expr_src   = node.location.slice.strip
-        indent     = " " * node.location.start_column
-        insert_line = node.location.start_line - 1
-
-        # Insert `variable = <expr>` on the line above, then replace the
-        # expression in-place with the variable name.
-        insert_edit = Interface::TextEdit.new(
-          range: Interface::Range.new(
-            start: Interface::Position.new(line: insert_line, character: 0),
-            end: Interface::Position.new(line: insert_line, character: 0)
-          ),
-          new_text: "#{indent}variable = #{expr_src}\n"
-        )
-
-        replace_edit = Interface::TextEdit.new(
-          range: node_to_lsp_range(node),
-          new_text: "variable"
-        )
-
-        @response_builder << Interface::CodeAction.new(
-          title: "Extract local variable",
-          kind: Constant::CodeActionKind::REFACTOR_EXTRACT,
-          edit: multi_edit_workspace_edit([insert_edit, replace_edit])
         )
       end
     end

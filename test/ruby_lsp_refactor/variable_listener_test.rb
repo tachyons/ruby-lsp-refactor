@@ -62,29 +62,6 @@ module RubyLsp
         assert_nil find_action(actions, /Inline variable/)
       end
 
-      # ===========================================================================
-      # 2. Extract local variable
-      # ===========================================================================
-
-      def test_extract_local_variable_inserts_assignment_above
-        source = "user.full_name.upcase\n"
-        actions = code_actions_for(source, line: 0)
-        action  = find_action(actions, "Extract local variable")
-        refute_nil action
-
-        edits = all_edits(action)
-        assert_equal 2, edits.size
-
-        insert_edit  = edits.find { |e| e.new_text.include?("variable =") }
-        replace_edit = edits.find { |e| e.new_text == "variable" }
-
-        refute_nil insert_edit
-        refute_nil replace_edit
-
-        assert_match(/variable = user\.full_name\.upcase/, insert_edit.new_text)
-        assert_equal 0, insert_edit.range.start.line
-      end
-
       # ---------------------------------------------------------------------------
       # Resilience
       # ---------------------------------------------------------------------------

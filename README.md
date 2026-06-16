@@ -32,6 +32,12 @@ bundle install
 The add-on is discovered and activated automatically by ruby-lsp — no further
 configuration is required.
 
+> **Note on upstream overlap.** ruby-lsp already provides "Refactor: Extract
+> Variable", "Refactor: Extract Method", and "Refactor: Toggle block style"
+> natively. This add-on intentionally does not duplicate those actions — place
+> your cursor on any expression or block and they will appear alongside the
+> refactorings listed below.
+
 ## Supported refactorings
 
 Place your cursor anywhere on the relevant construct and open the code-actions
@@ -224,18 +230,6 @@ puts user.calculate
 log user.calculate
 ```
 
-#### Extract local variable
-
-Wraps any expression under the cursor in a new local variable inserted on the
-line above.
-
-```ruby
-user.full_name.upcase
-# After
-variable = user.full_name.upcase
-variable
-```
-
 #### Extract constant
 
 Extracts a literal value (integer, float, string, symbol) inside a class or
@@ -262,34 +256,6 @@ end
 ---
 
 ### Methods & classes
-
-#### Extract to method
-
-Extracts a local variable's right-hand-side into a new `private` method.
-Variables defined before the extraction point that are referenced in the
-expression are automatically forwarded as parameters.
-
-```ruby
-# Before — cursor on the assignment
-def process(data)
-  threshold = 10
-  result = data.select { |x| x > threshold }
-  result
-end
-
-# After
-def process(data)
-  threshold = 10
-  result = result(threshold)
-  result
-end
-
-  private
-
-  def result(threshold)
-    data.select { |x| x > threshold }
-  end
-```
 
 #### Add parameter
 
@@ -391,20 +357,6 @@ end
 ---
 
 ### Operators & blocks
-
-#### Convert to do…end block / Convert to brace block
-
-Toggles a block between `{ }` and `do…end` style. Multi-statement blocks are
-always expanded to `do…end`; single-statement `do…end` blocks can be collapsed
-to brace style.
-
-```ruby
-users.each { |u| u.activate! }
-# After
-users.each do |u|
-  u.activate!
-end
-```
 
 #### Convert to tap
 
