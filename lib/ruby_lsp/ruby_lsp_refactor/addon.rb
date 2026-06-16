@@ -4,6 +4,7 @@ require "ruby_lsp/addon"
 
 # Conditionals
 require_relative "listeners/conditional_listener"
+require_relative "listeners/early_return_listener"
 
 # Strings
 require_relative "listeners/string_listener"
@@ -21,12 +22,17 @@ require_relative "listeners/constant_listener"
 
 # Methods & classes
 require_relative "listeners/method_listener"
+require_relative "listeners/extract_predicate_listener"
 require_relative "listeners/accessor_listener"
 require_relative "listeners/rescue_listener"
 require_relative "listeners/super_listener"
 
+# Multi-file
+require_relative "listeners/extract_include_file_listener"
+
 # Operators & blocks
 require_relative "listeners/block_style_listener"
+require_relative "listeners/tap_listener"
 require_relative "listeners/logical_operator_listener"
 require_relative "listeners/raise_listener"
 
@@ -99,6 +105,7 @@ module RubyLsp
         dispatcher       = Prism::Dispatcher.new
 
         ConditionalListener.new(response_builder, node_context, dispatcher)
+        EarlyReturnListener.new(response_builder, node_context, dispatcher)
         StringListener.new(response_builder, node_context, dispatcher)
         StringArrayListener.new(response_builder, node_context, dispatcher)
         StringFreezeListener.new(response_builder, node_context, dispatcher)
@@ -108,10 +115,13 @@ module RubyLsp
         VariableListener.new(response_builder, node_context, dispatcher)
         ConstantListener.new(response_builder, node_context, dispatcher)
         MethodListener.new(response_builder, node_context, dispatcher)
+        ExtractPredicateListener.new(response_builder, node_context, dispatcher)
         AccessorListener.new(response_builder, node_context, dispatcher)
         RescueListener.new(response_builder, node_context, dispatcher)
         SuperListener.new(response_builder, node_context, dispatcher)
+        ExtractIncludeFileListener.new(response_builder, node_context, dispatcher)
         BlockStyleListener.new(response_builder, node_context, dispatcher)
+        TapListener.new(response_builder, node_context, dispatcher)
         LogicalOperatorListener.new(response_builder, node_context, dispatcher)
         RaiseListener.new(response_builder, node_context, dispatcher)
         RspecLetListener.new(response_builder, node_context, dispatcher)

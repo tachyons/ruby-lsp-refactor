@@ -95,6 +95,56 @@ module RubyLsp
         def indent_for(node)
           " " * node.location.start_column
         end
+
+        # Builds a multi-file WorkspaceEdit using document_changes, which
+        # supports both file creation (CreateFile) and text edits across
+        # multiple documents (TextDocumentEdit).
+        #
+        # +document_changes+ is an ordered array of:
+        #   Interface::CreateFile        — create a new empty file
+        #   Interface::TextDocumentEdit  — apply text edits to a file
+        #
+        # The LSP spec requires CreateFile operations to appear before any
+        # TextDocumentEdit that writes into the newly created file.
+        #
+        # @param document_changes [Array<Interface::CreateFile | Interface::TextDocumentEdit>]
+        # @return [Interface::WorkspaceEdit]
+        def multi_file_workspace_edit(document_changes)
+          Interface::WorkspaceEdit.new(document_changes: document_changes)
+        end
+
+        # Builds a TextDocumentEdit for a given URI and array of TextEdits.
+        # Used as one entry inside a multi_file_workspace_edit.
+        #
+        # @param uri   [String]  file URI, e.g. "file:///project/lib/foo.rb"
+        # @param edits [Array<Interface::TextEdit>]
+        # @return [Interface::TextDocumentEdit]
+        def text_document_edit(uri, edits)
+          Interface::TextDocumentEdit.new(
+            text_document: Interface::OptionalVersionedTextDocumentIdentifier.new(
+              uri: uri,
+              version: nil
+            ),
+            edits: edits
+          )
+        end
+
+        # Builds a CreateFile operation for use in a multi_file_workspace_edit.
+        # The file is created empty; a subsequent TextDocumentEdit writes its
+        # content.
+        #
+        # @param uri [String]  file URI for the new file
+        # @return [Interface::CreateFile]
+        def create_file_operation(uri)
+          Interface::CreateFile.new(
+            kind: "create",
+            uri: uri,
+            options: Interface::CreateFileOptions.new(
+              overwrite: false,
+              ignore_if_exists: false
+            )
+          )
+        end
       end
     end
   end
