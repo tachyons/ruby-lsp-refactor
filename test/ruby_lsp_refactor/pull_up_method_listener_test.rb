@@ -256,7 +256,7 @@ module RubyLsp
         global_state = RubyLsp::GlobalState.new
         global_state.index.index_single(
           URI::Generic.from_path(path: parent_file.path),
-          File.read(parent_file.path),
+          File.read(parent_file.path)
         )
 
         document = RubyLsp::RubyDocument.new(
@@ -267,9 +267,9 @@ module RubyLsp
               end
             end
           RUBY
-          version:      1,
-          uri:          uri,
-          global_state: global_state,
+          version: 1,
+          uri: uri,
+          global_state: global_state
         )
 
         range   = { start: { line: 1, character: 0 }, end: { line: 1, character: 0 } }
@@ -302,7 +302,7 @@ module RubyLsp
         global_state = RubyLsp::GlobalState.new
         global_state.index.index_single(
           URI::Generic.from_path(path: parent_file.path),
-          File.read(parent_file.path),
+          File.read(parent_file.path)
         )
 
         document = RubyLsp::RubyDocument.new(
@@ -313,9 +313,9 @@ module RubyLsp
               end
             end
           RUBY
-          version:      1,
-          uri:          uri,
-          global_state: global_state,
+          version: 1,
+          uri: uri,
+          global_state: global_state
         )
 
         range   = { start: { line: 1, character: 0 }, end: { line: 1, character: 0 } }
@@ -354,7 +354,7 @@ module RubyLsp
         global_state = RubyLsp::GlobalState.new
         global_state.index.index_single(
           URI::Generic.from_path(path: parent_file.path),
-          File.read(parent_file.path),
+          File.read(parent_file.path)
         )
 
         document = RubyLsp::RubyDocument.new(
@@ -365,9 +365,9 @@ module RubyLsp
               end
             end
           RUBY
-          version:      1,
-          uri:          uri,
-          global_state: global_state,
+          version: 1,
+          uri: uri,
+          global_state: global_state
         )
 
         range   = { start: { line: 1, character: 0 }, end: { line: 1, character: 0 } }
@@ -403,7 +403,7 @@ module RubyLsp
         global_state = RubyLsp::GlobalState.new
         global_state.index.index_single(
           URI::Generic.from_path(path: parent_file.path),
-          File.read(parent_file.path),
+          File.read(parent_file.path)
         )
 
         document = RubyLsp::RubyDocument.new(
@@ -414,9 +414,9 @@ module RubyLsp
               end
             end
           RUBY
-          version:      1,
-          uri:          uri,
-          global_state: global_state,
+          version: 1,
+          uri: uri,
+          global_state: global_state
         )
 
         range   = { start: { line: 1, character: 0 }, end: { line: 1, character: 0 } }

@@ -61,16 +61,16 @@ module RubyLsp
       # or nil otherwise.
       def tap_eligible?(def_node)
         body = def_node.body
-        return unless body.is_a?(Prism::StatementsNode)
+        return false unless body.is_a?(Prism::StatementsNode)
 
         stmts = body.body
-        return unless stmts.length >= 2
+        return false unless stmts.length >= 2
 
         last = stmts.last
         calls = stmts[0..-2]
 
         # Last statement must be a bare variable_call.
-        return unless last.is_a?(Prism::CallNode) && last.variable_call?
+        return false unless last.is_a?(Prism::CallNode) && last.variable_call?
 
         receiver_name = last.name
 

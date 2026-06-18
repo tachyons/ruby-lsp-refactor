@@ -63,7 +63,7 @@ module RubyLsp
           self,
           :on_class_node_enter,
           :on_class_node_leave,
-          :on_def_node_enter,
+          :on_def_node_enter
         )
       end
 
@@ -112,7 +112,7 @@ module RubyLsp
 
       # ── same-file ─────────────────────────────────────────────────────────────
 
-      def emit_same_file_pull_up(def_node, child_class, parent_node)
+      def emit_same_file_pull_up(def_node, _child_class, parent_node)
         source_lines = @document.source.lines
 
         insert_edit = build_insert_edit(def_node, parent_node, source_lines)
@@ -120,8 +120,8 @@ module RubyLsp
 
         @response_builder << Interface::CodeAction.new(
           title: "Pull up method '#{def_node.name}' to #{parent_node.constant_path.location.slice}",
-          kind:  Constant::CodeActionKind::REFACTOR_REWRITE,
-          edit:  multi_edit_workspace_edit([insert_edit, delete_edit]),
+          kind: Constant::CodeActionKind::REFACTOR_REWRITE,
+          edit: multi_edit_workspace_edit([insert_edit, delete_edit])
         )
       end
 
@@ -151,7 +151,7 @@ module RubyLsp
 
         # The index Location uses 1-based lines.
         # end_line points to the line containing the class's `end` keyword.
-        parent_end_line_0based  = entry.location.end_line - 1   # 0-based
+        parent_end_line_0based  = entry.location.end_line - 1 # 0-based
         parent_class_column     = entry.location.start_column
 
         child_source_lines = @document.source.lines
@@ -161,9 +161,9 @@ module RubyLsp
         insert_edit = Interface::TextEdit.new(
           range: Interface::Range.new(
             start: Interface::Position.new(line: parent_end_line_0based, character: 0),
-            end:   Interface::Position.new(line: parent_end_line_0based, character: 0),
+            end: Interface::Position.new(line: parent_end_line_0based, character: 0)
           ),
-          new_text: method_text,
+          new_text: method_text
         )
 
         insert_doc_edit = text_document_edit(parent_file_uri, [insert_edit])
@@ -171,8 +171,8 @@ module RubyLsp
 
         @response_builder << Interface::CodeAction.new(
           title: "Pull up method '#{def_node.name}' to #{superclass_name} (#{File.basename(entry.file_path)})",
-          kind:  Constant::CodeActionKind::REFACTOR_REWRITE,
-          edit:  multi_file_workspace_edit([insert_doc_edit, delete_doc_edit]),
+          kind: Constant::CodeActionKind::REFACTOR_REWRITE,
+          edit: multi_file_workspace_edit([insert_doc_edit, delete_doc_edit])
         )
       rescue StandardError
         nil
@@ -190,9 +190,9 @@ module RubyLsp
         Interface::TextEdit.new(
           range: Interface::Range.new(
             start: Interface::Position.new(line: parent_end_line_0based, character: 0),
-            end:   Interface::Position.new(line: parent_end_line_0based, character: 0),
+            end: Interface::Position.new(line: parent_end_line_0based, character: 0)
           ),
-          new_text: method_text,
+          new_text: method_text
         )
       end
 
@@ -203,7 +203,7 @@ module RubyLsp
         delete_end   = def_node.location.end_line        # 0-based exclusive
 
         # Absorb the blank line before the method if present; otherwise the one after.
-        if delete_start > 0 && source_lines[delete_start - 1]&.strip&.empty?
+        if delete_start.positive? && source_lines[delete_start - 1]&.strip&.empty?
           delete_start -= 1
         elsif source_lines[delete_end]&.strip&.empty?
           delete_end += 1
@@ -212,9 +212,9 @@ module RubyLsp
         Interface::TextEdit.new(
           range: Interface::Range.new(
             start: Interface::Position.new(line: delete_start, character: 0),
-            end:   Interface::Position.new(line: delete_end,   character: 0),
+            end: Interface::Position.new(line: delete_end, character: 0)
           ),
-          new_text: "",
+          new_text: ""
         )
       end
 

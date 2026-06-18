@@ -60,8 +60,8 @@ module RubyLsp
           RubyLsp::Refactor::Addon.refactor_actions_for(
             @document,
             @range,
-            RubyLsp::Refactor::Addon.global_state,
-          ),
+            RubyLsp::Refactor::Addon.global_state
+          )
         )
         actions
       end
