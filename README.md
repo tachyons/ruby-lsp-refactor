@@ -276,6 +276,35 @@ parameters, rest args, and block parameters are left unchanged.
 def create(name, age)  →  def create(name:, age:)
 ```
 
+#### Pull up method
+
+Moves a method from a child class to its parent class. When the parent is
+defined in the same file, a single atomic edit moves the method and removes it
+from the child. When the parent is in a different file, the ruby-lsp index is
+used to locate it and a cross-file workspace edit is applied.
+
+```ruby
+# Before — cursor on `def foo`
+class Parent
+end
+
+class Child < Parent
+  def foo
+    "hello"
+  end
+end
+
+# After
+class Parent
+  def foo
+    "hello"
+  end
+end
+
+class Child < Parent
+end
+```
+
 #### Convert to attr_accessor
 
 Detects an `attr_reader` paired with a canonical manual writer
@@ -696,11 +725,12 @@ class Report
 end
 ```
 
-#### 🔲 Pull Members Up / Push Members Down
+#### 🔲 Push Members Down
 
-Moves methods between a class and its superclass. "Pull up" moves a method
-from a subclass to the superclass; "push down" moves it from the superclass
-into one or more subclasses. Both operations update all affected files.
+Moves a method from a superclass down into one or more subclasses. The
+"pull up" direction is already implemented as the **Pull up method** action
+above. "Push down" requires knowing which subclasses exist, which needs the
+ruby-lsp index.
 
 #### 🔲 Safe Delete
 

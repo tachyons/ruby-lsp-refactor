@@ -151,12 +151,12 @@ module RubyLsp
       # ── 2. Convert to keyword arguments ──────────────────────────────────────
 
       def has_positional_params?(def_node)
-        def_node.parameters&.requireds&.any? { |p| p.is_a?(Prism::RequiredParameterNode) }
+        def_node.parameters&.requireds&.any?(Prism::RequiredParameterNode)
       end
 
       def emit_convert_to_kwargs(def_node)
         params_node = def_node.parameters
-        requireds   = params_node.requireds.select { |p| p.is_a?(Prism::RequiredParameterNode) }
+        requireds   = params_node.requireds.grep(Prism::RequiredParameterNode)
 
         # Build the new parameter list: keep non-required params verbatim,
         # convert required positionals to `name:`.
@@ -186,14 +186,12 @@ module RubyLsp
 
       def build_kwargs_param_list(params_node, requireds)
         required_names = requireds.map(&:name)
-        parts = []
-
-        params_node.requireds.each do |p|
-          parts << if required_names.include?(p.name)
-                     "#{p.name}:"
-                   else
-                     p.location.slice.strip
-                   end
+        parts = params_node.requireds.map do |p|
+          if required_names.include?(p.name)
+            "#{p.name}:"
+          else
+            p.location.slice.strip
+          end
         end
 
         params_node.optionals.each { |p| parts << p.location.slice.strip }

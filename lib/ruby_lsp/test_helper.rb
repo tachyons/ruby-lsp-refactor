@@ -43,7 +43,7 @@ module RubyLsp
           end: { line: line, character: char }
         }
 
-        RubyLsp::Refactor::Addon.refactor_actions_for(document, range)
+        RubyLsp::Refactor::Addon.refactor_actions_for(document, range, global_state)
       end
     end
   end

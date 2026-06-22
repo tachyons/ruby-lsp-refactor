@@ -22,6 +22,7 @@ require_relative "listeners/constant_listener"
 
 # Methods & classes
 require_relative "listeners/method_listener"
+require_relative "listeners/pull_up_method_listener"
 require_relative "listeners/extract_predicate_listener"
 require_relative "listeners/accessor_listener"
 require_relative "listeners/rescue_listener"
@@ -49,18 +50,33 @@ module RubyLsp
     # Runs our own AST walk and appends the resulting actions to whatever
     # ruby-lsp itself returns.  Each action carries a full `edit:` so no
     # resolve round-trip is needed (the LSP spec allows this).
+    #
+    # NOTE: CodeActions#initialize does not receive global_state, so we read it
+    # from Addon.global_state — a class-level reference set during activation.
     module CodeActionsExtension
       def perform
         actions = super || []
-        actions.concat(RubyLsp::Refactor::Addon.refactor_actions_for(@document, @range))
+        actions.concat(
+          RubyLsp::Refactor::Addon.refactor_actions_for(
+            @document,
+            @range,
+            RubyLsp::Refactor::Addon.global_state
+          )
+        )
         actions
       end
     end
 
     class Addon < ::RubyLsp::Addon
+      # Class-level accessor so CodeActionsExtension can reach global_state
+      # without being injected into CodeActions#initialize.
+      class << self
+        attr_accessor :global_state
+      end
+
       # Called once when the language server activates this add-on.
       def activate(global_state, _message_queue)
-        @global_state = global_state
+        Addon.global_state = global_state
 
         # Inject our actions into the standard code-actions response.
         RubyLsp::Requests::CodeActions.prepend(CodeActionsExtension)
@@ -84,7 +100,7 @@ module RubyLsp
       # @param document [RubyLsp::RubyDocument]
       # @param range    [Hash]  LSP range hash { start: {line:, character:}, end: {line:, character:} }
       # @return [Array<Interface::CodeAction>]
-      def self.refactor_actions_for(document, range)
+      def self.refactor_actions_for(document, range, global_state = nil)
         return [] unless document.is_a?(RubyLsp::RubyDocument)
         return [] if document.source.empty?
 
@@ -114,6 +130,7 @@ module RubyLsp
         VariableListener.new(response_builder, node_context, dispatcher)
         ConstantListener.new(response_builder, node_context, dispatcher)
         MethodListener.new(response_builder, node_context, dispatcher)
+        PullUpMethodListener.new(response_builder, node_context, dispatcher, document, global_state)
         ExtractPredicateListener.new(response_builder, node_context, dispatcher)
         AccessorListener.new(response_builder, node_context, dispatcher)
         RescueListener.new(response_builder, node_context, dispatcher)
